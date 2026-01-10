@@ -5,7 +5,6 @@ A comprehensive FiftyOne plugin that provides an interactive panel for training 
 ## Features
 
 ### 📊 Train Model Tab
-![Training interface with visual tag distribution]
 ![](https://github.com/prernadh/yolo-model-tuner-runner/blob/main/model_trainer_gif.gif)
 
 - 🎯 **Visual Tag Distribution**: Interactive histogram showing train/val/both/untagged sample counts
