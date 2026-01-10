@@ -1,0 +1,46 @@
+{
+  "name": "@prernadh/yolo-model-tuner-runner",
+  "version": "1.0.0",
+  "description": "A panel to run and finetune YOLOv8 models on the current FiftyOne dataset",
+  "main": "src/index.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "nodemon --watch ./src --ext js,jsx,ts,tsx --exec 'yarn build'",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "fiftyone": {
+    "script": "dist/index.umd.js"
+  },
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@fiftyone/plugin-build": "*",
+    "@types/react": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "nodemon": "^3.0.1",
+    "typescript": "^5.0.0",
+    "vite": "^4.3.9"
+  },
+  "resolutions": {
+    "@fiftyone/fiftyone": "portal:../fiftyone/app",
+    "@fiftyone/aggregations": "portal:../fiftyone/app/packages/aggregations",
+    "@fiftyone/app": "portal:../fiftyone/app/packages/app",
+    "@fiftyone/components": "portal:../fiftyone/app/packages/components",
+    "@fiftyone/core": "portal:../fiftyone/app/packages/core",
+    "@fiftyone/dataset": "portal:../fiftyone/app/packages/dataset",
+    "FiftyOne": "portal:../fiftyone/app/packages/desktop",
+    "@fiftyone/embeddings": "portal:../fiftyone/app/packages/embeddings",
+    "@fiftyone/flashlight": "portal:../fiftyone/app/packages/flashlight",
+    "@fiftyone/looker": "portal:../fiftyone/app/packages/looker",
+    "@fiftyone/looker-3d": "portal:../fiftyone/app/packages/looker-3d",
+    "@fiftyone/map": "portal:../fiftyone/app/packages/map",
+    "@fiftyone/plugins": "portal:../fiftyone/app/packages/plugins",
+    "@fiftyone/relay": "portal:../fiftyone/app/packages/relay",
+    "@fiftyone/spaces": "portal:../fiftyone/app/packages/spaces",
+    "@fiftyone/state": "portal:../fiftyone/app/packages/state",
+    "@fiftyone/utilities": "portal:../fiftyone/app/packages/utilities",
+    "@fiftyone/operators": "portal:../fiftyone/app/packages/operators"
+  }
+}
