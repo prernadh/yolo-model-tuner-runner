@@ -117,13 +117,13 @@ def export_yolo_data(
     logger.info(f"Exported {len(split_view)} samples for split '{split}'")
 
 
-class ModelFineTuner2(foo.Operator):
+class ModelFineTuner(foo.Operator):
     """Operator to finetune YOLOv8 models on FiftyOne datasets."""
 
     @property
     def config(self):
         return foo.OperatorConfig(
-            name="model_fine_tuner_2",
+            name="model_fine_tuner",
             label="Finetune YOLOv8 Model",
             description="Finetune a YOLOv8 model on the current dataset",
             unlisted=True,  # Called from JS panel
@@ -231,13 +231,13 @@ class ModelFineTuner2(foo.Operator):
         }
 
 
-class GetTagCounts2(foo.Operator):
+class GetTagCounts(foo.Operator):
     """Operator to get tag counts for the dataset."""
 
     @property
     def config(self):
         return foo.OperatorConfig(
-            name="get_tag_counts_2",
+            name="get_tag_counts",
             label="Get Tag Counts",
             description="Get count of samples with each tag in the dataset",
             unlisted=True,  # Called from JS panel
@@ -263,13 +263,13 @@ class GetTagCounts2(foo.Operator):
         return result
 
 
-class ApplyRemoteModel2(foo.Operator):
+class ApplyRemoteModel(foo.Operator):
     """Operator to apply trained YOLOv8 models to FiftyOne datasets."""
 
     @property
     def config(self):
         return foo.OperatorConfig(
-            name="apply_remote_model_2",
+            name="apply_remote_model",
             label="Apply YOLOv8 Model",
             description="Run inference with a YOLOv8 model on the current dataset",
             unlisted=True,  # Called from JS panel
@@ -325,6 +325,6 @@ class ApplyRemoteModel2(foo.Operator):
 
 def register(plugin):
     """Register plugin operators with FiftyOne."""
-    plugin.register(ModelFineTuner2)
-    plugin.register(GetTagCounts2)
-    plugin.register(ApplyRemoteModel2)
+    plugin.register(ModelFineTuner)
+    plugin.register(GetTagCounts)
+    plugin.register(ApplyRemoteModel)

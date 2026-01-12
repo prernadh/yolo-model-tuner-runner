@@ -2,9 +2,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import * as fos from "@fiftyone/state";
 import { useOperatorExecutor } from "@fiftyone/operators";
-import { OperatorExecutionButton } from "@fiftyone/operators";
 import { OperatorExecutionOption } from "@fiftyone/operators/src/state";
 import { useTheme } from "@mui/material";
+import { OperatorButtonWithWarning } from "./OperatorButtonWithWarning";
 
 interface TagStats {
   train_count: number;
@@ -27,7 +27,7 @@ export function ModelFineTunerPanel() {
 
   // Use operator executor to get tag counts
   const tagCountsExecutor = useOperatorExecutor<{ tag_counts: { [key: string]: number } }>(
-    "@prernadh/yolo-model-tuner-runner/get_tag_counts_2"
+    "@prernadh/yolo-model-tuner-runner/get_tag_counts"
   );
 
   // Extract tag counts from executor result
@@ -66,6 +66,7 @@ export function ModelFineTunerPanel() {
   const [showSuccessOverlay, setShowSuccessOverlay] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(5);
+
 
   // Calculate tag statistics from recoil state
   const tagStats = useMemo(() => {
@@ -457,8 +458,8 @@ export function ModelFineTunerPanel() {
 
       {/* Action Section */}
       <div style={styles.footer}>
-        <OperatorExecutionButton
-          operatorUri="@prernadh/yolo-model-tuner-runner/model_fine_tuner_2"
+        <OperatorButtonWithWarning
+          operatorUri="@prernadh/yolo-model-tuner-runner/model_fine_tuner"
           executionParams={{
             det_field: selectedField,
             weights_path: weightsPath,
@@ -475,7 +476,7 @@ export function ModelFineTunerPanel() {
           style={{ width: "100%" }}
         >
           {isTraining ? "Training..." : "Start Training"}
-        </OperatorExecutionButton>
+        </OperatorButtonWithWarning>
       </div>
         </>
       )}
@@ -526,8 +527,8 @@ export function ModelFineTunerPanel() {
 
           {/* Action Section */}
           <div style={styles.footer}>
-            <OperatorExecutionButton
-              operatorUri="@prernadh/yolo-model-tuner-runner/apply_remote_model_2"
+            <OperatorButtonWithWarning
+              operatorUri="@prernadh/yolo-model-tuner-runner/apply_remote_model"
               executionParams={{
                 det_field: applyField,
                 weights_path: applyWeightsPath,
@@ -542,7 +543,7 @@ export function ModelFineTunerPanel() {
               style={{ width: "100%" }}
             >
               {isApplying ? "Applying Model..." : "Apply Model"}
-            </OperatorExecutionButton>
+            </OperatorButtonWithWarning>
           </div>
         </>
       )}

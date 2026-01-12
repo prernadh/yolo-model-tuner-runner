@@ -4,6 +4,6 @@ version: "1.0.0"
 description: "A panel to run and finetune YOLOv8 models on the current FiftyOne dataset"
 
 operators:
-  - model_fine_tuner_2
-  - apply_remote_model_2
-  - get_tag_counts_2
+  - model_fine_tuner
+  - apply_remote_model
+  - get_tag_counts
