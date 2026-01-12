@@ -299,7 +299,7 @@ export function ModelFineTunerPanel() {
                     title={`Click to filter: ${tagStats.train_count} samples`}
                   />
                 </div>
-                <div style={{...styles.barLabel, color: "#4caf50"}}>Train</div>
+                <div style={{...styles.barLabel, color: "#4caf50"}}>train</div>
                 <div style={{...styles.barCount, color: "#4caf50"}}>
                   {tagStats.train_count}
                 </div>
@@ -319,7 +319,7 @@ export function ModelFineTunerPanel() {
                     title={`Click to filter: ${tagStats.val_count} samples`}
                   />
                 </div>
-                <div style={{...styles.barLabel, color: "#2196f3"}}>Val</div>
+                <div style={{...styles.barLabel, color: "#2196f3"}}>val</div>
                 <div style={{...styles.barCount, color: "#2196f3"}}>
                   {tagStats.val_count}
                 </div>
@@ -339,7 +339,7 @@ export function ModelFineTunerPanel() {
                     title={`Click to filter: ${tagStats.both_count} samples`}
                   />
                 </div>
-                <div style={{...styles.barLabel, color: "#f44336"}}>Both</div>
+                <div style={{...styles.barLabel, color: "#f44336"}}>both</div>
                 <div style={{...styles.barCount, color: "#f44336"}}>
                   {tagStats.both_count}
                 </div>
@@ -359,7 +359,7 @@ export function ModelFineTunerPanel() {
                     title={`Click to filter: ${tagStats.untagged_count} samples`}
                   />
                 </div>
-                <div style={{...styles.barLabel, color: "#9e9e9e"}}>Untagged</div>
+                <div style={{...styles.barLabel, color: "#9e9e9e"}}>untagged</div>
                 <div style={{...styles.barCount, color: "#9e9e9e"}}>
                   {tagStats.untagged_count}
                 </div>
