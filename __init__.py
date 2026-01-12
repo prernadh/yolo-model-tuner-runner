@@ -127,7 +127,7 @@ class ModelFineTuner2(foo.Operator):
             label="Finetune YOLOv8 Model",
             description="Finetune a YOLOv8 model on the current dataset",
             unlisted=True,  # Called from JS panel
-            allow_immediate_execution=True,
+            allow_immediate_execution=False,
             allow_delegated_execution=True,
             default_choice_to_delegated=True,
         )
@@ -273,7 +273,7 @@ class ApplyRemoteModel2(foo.Operator):
             label="Apply YOLOv8 Model",
             description="Run inference with a YOLOv8 model on the current dataset",
             unlisted=True,  # Called from JS panel
-            allow_immediate_execution=True,
+            allow_immediate_execution=False,
             allow_delegated_execution=True,
             default_choice_to_delegated=True,
         )
