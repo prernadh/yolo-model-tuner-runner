@@ -11,6 +11,4 @@ operators:
   - apply_remote_model_2
 
 panels:
-  - name: ModelFineTunerPanel
-    label: Model Fine-Tuner
-    component: ModelFineTunerPanel
+  - ModelFineTunerPanel
