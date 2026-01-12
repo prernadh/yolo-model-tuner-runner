@@ -2,13 +2,8 @@ name: "@prernadh/yolo-model-tuner-runner"
 type: plugin
 version: "1.0.0"
 description: "A panel to run and finetune YOLOv8 models on the current FiftyOne dataset"
-fiftyone:
-  version: ">=1.2.0"
-js_bundle: dist/index.umd.js
 
 operators:
   - model_fine_tuner_2
   - apply_remote_model_2
-
-panels:
-  - ModelFineTunerPanel
+  - get_tag_counts_2

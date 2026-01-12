@@ -231,6 +231,38 @@ class ModelFineTuner2(foo.Operator):
         }
 
 
+class GetTagCounts2(foo.Operator):
+    """Operator to get tag counts for the dataset."""
+
+    @property
+    def config(self):
+        return foo.OperatorConfig(
+            name="get_tag_counts_2",
+            label="Get Tag Counts",
+            description="Get count of samples with each tag in the dataset",
+            unlisted=True,  # Called from JS panel
+            allow_immediate_execution=True,
+        )
+
+    def execute(self, ctx):
+        """
+        Get tag counts for the dataset.
+
+        Returns:
+            dict: Tag counts dictionary
+        """
+        dataset = ctx.dataset
+        logger.info(f"Getting tag counts for dataset: {dataset.name}")
+        tag_counts = dataset.count_sample_tags()
+        logger.info(f"Tag counts: {tag_counts}")
+
+        result = {
+            "tag_counts": tag_counts,
+        }
+        logger.info(f"Returning result: {result}")
+        return result
+
+
 class ApplyRemoteModel2(foo.Operator):
     """Operator to apply trained YOLOv8 models to FiftyOne datasets."""
 
@@ -294,4 +326,5 @@ class ApplyRemoteModel2(foo.Operator):
 def register(plugin):
     """Register plugin operators with FiftyOne."""
     plugin.register(ModelFineTuner2)
+    plugin.register(GetTagCounts2)
     plugin.register(ApplyRemoteModel2)

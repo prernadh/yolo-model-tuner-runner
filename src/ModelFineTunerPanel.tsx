@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useRecoilValue, useSetRecoilState, selectorFamily } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import * as fos from "@fiftyone/state";
-import { Button } from "@fiftyone/components";
-import { useOperatorExecutor, executeOperator } from "@fiftyone/operators";
+import { useOperatorExecutor } from "@fiftyone/operators";
+import { OperatorExecutionButton } from "@fiftyone/operators";
+import { OperatorExecutionOption } from "@fiftyone/operators/src/state";
 import { useTheme } from "@mui/material";
 
 interface TagStats {
@@ -18,38 +19,34 @@ interface DetectionField {
   type: string;
 }
 
-// Custom selector to get dataset-level tag counts (ignores current view)
-const datasetTagCounts = selectorFamily<
-  { [key: string]: number },
-  void
->({
-  key: "datasetTagCounts",
-  get: () => ({ get }) => {
-    const data = get(
-      fos.aggregation({
-        modal: false,
-        extended: false,
-        root: true,  // This is critical - ignores view stages
-        path: "tags",
-        isQueryPerformance: false,
-        mixed: false,
-      })
-    );
-    if (data.__typename !== "StringAggregation") {
-      return {};
-    }
-    return Object.fromEntries(
-      data.values.map(({ value, count }) => [value, count])
-    );
-  },
-});
-
 export function ModelFineTunerPanel() {
   const theme = useTheme();
   const dataset = useRecoilValue(fos.dataset);
-  const tagCounts = useRecoilValue(datasetTagCounts(undefined));
-  const totalSampleCount = useRecoilValue(fos.datasetSampleCount);
+  const totalSampleCount = useRecoilValue(fos.datasetSampleCount) || 0;
   const setView = useSetRecoilState(fos.view);
+
+  // Use operator executor to get tag counts
+  const tagCountsExecutor = useOperatorExecutor<{ tag_counts: { [key: string]: number } }>(
+    "@prernadh/yolo-model-tuner-runner/get_tag_counts_2"
+  );
+
+  // Extract tag counts from executor result
+  const tagCounts = tagCountsExecutor.result?.tag_counts || {};
+
+  // Fetch tag counts when dataset changes and poll every 2 seconds
+  useEffect(() => {
+    if (!dataset) return;
+
+    // Initial fetch
+    tagCountsExecutor.execute({});
+
+    // Poll for updates every 2 seconds
+    const interval = setInterval(() => {
+      tagCountsExecutor.execute({});
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [dataset?.name]);
 
   const [activeTab, setActiveTab] = useState<"train" | "apply">("train");
   const [selectedField, setSelectedField] = useState<string>("ground_truth");
@@ -64,6 +61,11 @@ export function ModelFineTunerPanel() {
   const [applyField, setApplyField] = useState<string>("predictions");
   const [applyDeviceIndex, setApplyDeviceIndex] = useState<number>(0);
   const [isApplying, setIsApplying] = useState<boolean>(false);
+
+  // State for success notifications
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [countdown, setCountdown] = useState<number>(5);
 
   // Calculate tag statistics from recoil state
   const tagStats = useMemo(() => {
@@ -139,40 +141,104 @@ export function ModelFineTunerPanel() {
     }
   };
 
-  const handleTrain = async () => {
+  // Handler when user selects execution option (immediate or delegated)
+  const handleTrainStart = (option: OperatorExecutionOption) => {
     setIsTraining(true);
-    try {
-      await executeOperator("model_fine_tuner_2", {
-        det_field: selectedField,
-        weights_path: weightsPath,
-        export_uri: exportUri,
-        epochs: epochs,
-        target_device_index: deviceIndex,
-      });
-    } catch (error) {
-      console.error("Training failed:", error);
-    } finally {
-      setIsTraining(false);
+    console.log(`Training started with ${option.isDelegated ? 'delegated' : 'immediate'} execution`);
+  };
+
+  // Handler for successful training execution
+  const handleTrainSuccess = (response: any) => {
+    console.log("Training completed successfully", response);
+    setIsTraining(false);
+
+    if (response?.delegated) {
+      // Delegated execution - operation queued
+      const operatorId = response?.result?.id?.$oid;
+      console.log("Training delegated with operation ID:", operatorId);
+      setSuccessMessage("Training successfully scheduled!");
+      setShowSuccessOverlay(true);
+      setCountdown(5);
+
+      // Start countdown
+      let count = 5;
+      const countdownInterval = setInterval(() => {
+        count--;
+        setCountdown(count);
+        if (count === 0) {
+          clearInterval(countdownInterval);
+          setShowSuccessOverlay(false);
+        }
+      }, 1000);
+    } else {
+      // Immediate execution - operation completed
+      console.log("Training completed immediately");
     }
   };
 
-  const handleApplyModel = async () => {
+  // Handler for training errors
+  const handleTrainError = (error: any) => {
+    console.error("Training failed:", error);
+    setIsTraining(false);
+  };
+
+  // Handler when user selects execution option for apply model
+  const handleApplyStart = (option: OperatorExecutionOption) => {
     setIsApplying(true);
-    try {
-      await executeOperator("apply_remote_model_2", {
-        det_field: applyField,
-        weights_path: applyWeightsPath,
-        target_device_index: applyDeviceIndex,
-      });
-    } catch (error) {
-      console.error("Model application failed:", error);
-    } finally {
-      setIsApplying(false);
+    console.log(`Model application started with ${option.isDelegated ? 'delegated' : 'immediate'} execution`);
+  };
+
+  // Handler for successful model application
+  const handleApplySuccess = (response: any) => {
+    console.log("Model application completed successfully", response);
+    setIsApplying(false);
+
+    if (response?.delegated) {
+      // Delegated execution - operation queued
+      const operatorId = response?.result?.id?.$oid;
+      console.log("Model application delegated with operation ID:", operatorId);
+      setSuccessMessage("Model application successfully scheduled!");
+      setShowSuccessOverlay(true);
+      setCountdown(5);
+
+      // Start countdown
+      let count = 5;
+      const countdownInterval = setInterval(() => {
+        count--;
+        setCountdown(count);
+        if (count === 0) {
+          clearInterval(countdownInterval);
+          setShowSuccessOverlay(false);
+        }
+      }, 1000);
+    } else {
+      // Immediate execution - operation completed
+      console.log("Model application completed immediately");
     }
+  };
+
+  // Handler for model application errors
+  const handleApplyError = (error: any) => {
+    console.error("Model application failed:", error);
+    setIsApplying(false);
   };
 
   return (
     <div style={styles.container}>
+      {/* Success Overlay */}
+      {showSuccessOverlay && (
+        <div style={styles.successOverlay}>
+          <div style={styles.successOverlayContent}>
+            <div style={styles.successIcon}>✓</div>
+            <h3 style={styles.successTitle}>{successMessage}</h3>
+            <p style={styles.successSubtitle}>Check the Runs tab for progress</p>
+            <p style={styles.countdownText}>
+              Taking you back in {countdown}...
+            </p>
+          </div>
+        </div>
+      )}
+
       <div style={styles.header}>
         <h2 style={styles.title}>YOLOv8 Model Trainer</h2>
         <p style={styles.subtitle}>
@@ -391,15 +457,25 @@ export function ModelFineTunerPanel() {
 
       {/* Action Section */}
       <div style={styles.footer}>
-        <Button
-          onClick={handleTrain}
+        <OperatorExecutionButton
+          operatorUri="@prernadh/yolo-model-tuner-runner/model_fine_tuner_2"
+          executionParams={{
+            det_field: selectedField,
+            weights_path: weightsPath,
+            export_uri: exportUri,
+            epochs: epochs,
+            target_device_index: deviceIndex,
+          }}
+          onOptionSelected={handleTrainStart}
+          onSuccess={handleTrainSuccess}
+          onError={handleTrainError}
           disabled={isTraining || !isReadyToTrain}
           variant="contained"
           color="primary"
           style={{ width: "100%" }}
         >
           {isTraining ? "Training..." : "Start Training"}
-        </Button>
+        </OperatorExecutionButton>
       </div>
         </>
       )}
@@ -450,15 +526,23 @@ export function ModelFineTunerPanel() {
 
           {/* Action Section */}
           <div style={styles.footer}>
-            <Button
-              onClick={handleApplyModel}
+            <OperatorExecutionButton
+              operatorUri="@prernadh/yolo-model-tuner-runner/apply_remote_model_2"
+              executionParams={{
+                det_field: applyField,
+                weights_path: applyWeightsPath,
+                target_device_index: applyDeviceIndex,
+              }}
+              onOptionSelected={handleApplyStart}
+              onSuccess={handleApplySuccess}
+              onError={handleApplyError}
               disabled={isApplying}
               variant="contained"
               color="primary"
               style={{ width: "100%" }}
             >
               {isApplying ? "Applying Model..." : "Apply Model"}
-            </Button>
+            </OperatorExecutionButton>
           </div>
         </>
       )}
@@ -672,6 +756,45 @@ function createStyles(theme: any) {
       marginTop: "auto",
       paddingTop: "16px",
       borderTop: `1px solid ${theme.palette.divider}`,
+    },
+    successOverlay: {
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+    },
+    successOverlayContent: {
+      textAlign: "center" as const,
+      color: "#fff",
+      padding: "40px",
+    },
+    successIcon: {
+      fontSize: "72px",
+      color: "#4caf50",
+      marginBottom: "20px",
+      fontWeight: "bold" as const,
+    },
+    successTitle: {
+      fontSize: "24px",
+      fontWeight: 600,
+      marginBottom: "12px",
+      color: "#fff",
+    },
+    successSubtitle: {
+      fontSize: "16px",
+      marginBottom: "24px",
+      color: "rgba(255, 255, 255, 0.8)",
+    },
+    countdownText: {
+      fontSize: "18px",
+      fontWeight: 500,
+      color: "#4caf50",
     },
   };
 }
