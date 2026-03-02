@@ -22,6 +22,7 @@ interface DetectionField {
 export function ModelFineTunerPanel() {
   const theme = useTheme();
   const dataset = useRecoilValue(fos.dataset);
+  const sampleFields = useRecoilValue(fos.sampleFields);
   const totalSampleCount = useRecoilValue(fos.datasetSampleCount) || 0;
   const setView = useSetRecoilState(fos.view);
 
@@ -48,16 +49,23 @@ export function ModelFineTunerPanel() {
     return () => clearInterval(interval);
   }, [dataset?.name]);
 
+  // Get Detection fields from dataset schema
+  const detectionFields = useMemo((): string[] => {
+    return (sampleFields as Array<{ name: string; embeddedDocType: string | null }>)
+      .filter((f) => f.embeddedDocType === "fiftyone.core.labels.Detections")
+      .map((f) => f.name);
+  }, [sampleFields]);
+
   const [activeTab, setActiveTab] = useState<"train" | "apply">("train");
   const [selectedField, setSelectedField] = useState<string>("ground_truth");
-  const [weightsPath, setWeightsPath] = useState<string>("gs://voxel51-demo-fiftyone-ai/yolo/yolov8n.pt");
-  const [exportUri, setExportUri] = useState<string>("gs://voxel51-demo-fiftyone-ai/yolo/yolov8n_finetuned.pt");
+  const [weightsPath, setWeightsPath] = useState<string>("gs://voxel51-test/prerna/yolo_model/yolo11s.pt");
+  const [exportUri, setExportUri] = useState<string>("gs://voxel51-test/prerna/yolo_model/yolo11s_finetuned.pt");
   const [epochs, setEpochs] = useState<number>(1);
   const [deviceIndex, setDeviceIndex] = useState<number>(0);
   const [isTraining, setIsTraining] = useState<boolean>(false);
 
   // State for Apply Model tab
-  const [applyWeightsPath, setApplyWeightsPath] = useState<string>("gs://voxel51-demo-fiftyone-ai/yolo/yolov8n_finetuned.pt");
+  const [applyWeightsPath, setApplyWeightsPath] = useState<string>("gs://voxel51-test/prerna/yolo_model/yolo11s_finetuned.pt");
   const [applyField, setApplyField] = useState<string>("predictions");
   const [applyDeviceIndex, setApplyDeviceIndex] = useState<number>(0);
   const [isApplying, setIsApplying] = useState<boolean>(false);
@@ -395,13 +403,25 @@ export function ModelFineTunerPanel() {
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Ground Truth Field</label>
-          <input
-            type="text"
-            value={selectedField}
-            onChange={(e) => setSelectedField(e.target.value)}
-            style={styles.input}
-            placeholder="ground_truth"
-          />
+          {detectionFields.length > 0 ? (
+            <select
+              value={detectionFields.includes(selectedField) ? selectedField : detectionFields[0]}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedField(e.target.value)}
+              style={styles.input}
+            >
+              {detectionFields.map((field: string) => (
+                <option key={field} value={field}>{field}</option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={selectedField}
+              onChange={(e) => setSelectedField(e.target.value)}
+              style={styles.input}
+              placeholder="ground_truth"
+            />
+          )}
           <div style={styles.hint}>Detection field containing ground truth labels</div>
         </div>
 
